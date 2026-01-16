@@ -1,0 +1,897 @@
+================================================================================
+                  DOCUMENTATION DU PROJET SMARTQUEUE
+================================================================================
+Généré le : 13 janvier 2026
+
+================================================================================
+APERÇU DU PROJET
+================================================================================
+
+Nom du projet : SmartQueue
+Version : 1.0.0
+Type : Application mobile React Native (Expo)
+Objectif : Système de réservation et de gestion de rendez-vous
+
+Description :
+SmartQueue est une application mobile conçue pour aider les utilisateurs à gérer 
+leurs rendez-vous facilement. L'application fournit une interface rationalisée 
+pour planifier des rendez-vous avec divers services et suivre le statut des 
+rendez-vous.
+
+================================================================================
+PILE TECHNIQUE
+================================================================================
+
+Framework et Core :
+- React Native : 0.81.5
+- React : 19.1.0
+- Expo : ~54.0.31
+- Support de plateforme : iOS, Android, Web
+
+Navigation :
+- @react-navigation/native : ^7.1.26
+- @react-navigation/stack : ^7.6.13
+- @react-navigation/bottom-tabs : ^7.9.0
+- react-native-screens : ~4.16.0
+- react-native-safe-area-context : ~5.6.0
+
+Composants UI et Icônes :
+- @expo/vector-icons : ^15.0.3
+- expo-status-bar : ~3.0.9
+
+Stockage de données :
+- @react-native-async-storage/async-storage : 2.2.0
+- Base de données NoSQL en mémoire (memoryStore)
+
+Composants de formulaire :
+- @react-native-picker/picker : ^2.11.4
+- @react-native-community/datetimepicker : ^8.4.4
+
+Configuration de développement :
+- Expo New Architecture : Activée
+- Affichage Edge-to-Edge : Activé (Android)
+
+================================================================================
+STRUCTURE DU PROJET
+================================================================================
+
+Fichiers racine :
+├── App.js                  - Point d'entrée principal de l'application
+├── index.js                - Enregistrement du composant racine
+├── package.json            - Dépendances et scripts
+├── app.json                - Configuration Expo
+└── assets/                 - Icônes et écrans de démarrage
+
+Répertoire source (src/) :
+
+├── components/             - Composants UI réutilisables
+│   ├── AppHeader.js        - Composant d'en-tête avec titre et icône
+│   ├── AppointmentCard.js  - Carte pour afficher les rendez-vous
+│   ├── CustomButton.js     - Bouton personnalisé avec état de chargement
+│   ├── CustomInput.js      - Champ de saisie personnalisé avec icône
+│   └── ServiceCard.js      - Carte pour afficher les services
+│
+├── context/                - Fournisseurs React Context
+│   └── AuthContext.js      - Gestion de l'état d'authentification
+│
+├── navigation/             - Configuration de navigation
+│   ├── AppNavigator.js     - Navigation racine (basculement auth/main)
+│   ├── AuthNavigator.js    - Navigation du flux d'authentification
+│   └── TabNavigator.js     - Navigation par onglets pour l'application principale
+│
+├── nosql/                  - Couche de base de données
+│   └── database.js         - Opérations de base de données NoSQL en mémoire
+│
+├── screens/                - Écrans de l'application
+│   ├── auth/               - Écrans d'authentification
+│   │   ├── LoginScreen.js  - Connexion utilisateur
+│   │   └── RegisterScreen.js - Inscription utilisateur
+│   │
+│   ├── booking/            - Réservation de rendez-vous
+│   │   └── BookAppointmentScreen.js - Réserver de nouveaux rendez-vous
+│   │
+│   └── dashboard/          - Écrans principaux de l'application
+│       ├── HomeScreen.js   - Écran d'accueil/bienvenue
+│       ├── AppointmentsScreen.js - Voir/gérer les rendez-vous
+│       └── ProfileScreen.js - Gestion du profil utilisateur
+│
+├── services/               - Services de logique métier
+│   └── localDatabase.js    - Couche d'accès à la base de données
+│
+├── utils/                  - Fonctions utilitaires
+│   └── validators.js       - Utilitaires de validation de formulaire
+│
+└── assets/                 - Ressources source (icônes, images)
+    ├── icons/
+    └── images/
+
+================================================================================
+FONCTIONNALITÉS
+================================================================================
+
+Système d'authentification :
+- Inscription utilisateur (nom, email, mot de passe)
+- Connexion utilisateur avec validation des identifiants
+- État de connexion persistant avec AsyncStorage
+- Capacités d'édition de profil
+- Fonctionnalité de déconnexion sécurisée
+- Validation d'email (format : email@domaine.com)
+- Validation de mot de passe (minimum 6 caractères)
+- Validation de nom (minimum 2 caractères)
+
+Gestion des rendez-vous :
+- Voir tous les rendez-vous de l'utilisateur
+- Réserver de nouveaux rendez-vous avec sélection de service
+- Modifier les rendez-vous existants
+- Supprimer les rendez-vous avec confirmation
+- Mettre à jour le statut du rendez-vous (En attente/Confirmé/Annulé)
+- Intégration du sélecteur de date et heure
+- Filtrer les rendez-vous par utilisateur
+- Mises à jour en temps réel de la liste des rendez-vous
+
+Gestion des services :
+- Parcourir les services disponibles
+- Interface de sélection de service
+- Affichage des informations de service
+
+Profil utilisateur :
+- Voir les informations de profil
+- Modifier le nom et l'email
+- Gestion du mot de passe
+- Fonctionnalité de déconnexion
+
+Fonctionnalités UI/UX :
+- Navigation par onglets en bas (Accueil, Rendez-vous, Profil)
+- Indicateurs de chargement pour les opérations asynchrones
+- Dialogues d'alerte pour les confirmations et erreurs
+- Navigation et en-têtes basés sur les icônes
+- Mises en page réactives basées sur des cartes
+- Effets d'ombre et style moderne
+- Composants à thème personnalisé (couleur primaire bleue : #4F8EF7)
+
+================================================================================
+MODÈLES DE DONNÉES
+================================================================================
+
+Objet utilisateur :
+{
+  id: Number (timestamp),
+  name: String,
+  email: String,
+  password: String
+}
+
+Objet rendez-vous :
+{
+  id: Number (timestamp),
+  userId: Number,
+  serviceId: Number,
+  serviceName: String,
+  date: String,
+  time: String,
+  status: String ('Pending' | 'Confirmed' | 'Cancelled')
+}
+
+Objet service :
+{
+  id: Number,
+  name: String,
+  description: String (optionnel),
+  // Propriétés de service supplémentaires
+}
+
+================================================================================
+ARCHITECTURE DE BASE DE DONNÉES
+================================================================================
+
+Type de stockage : Base de données NoSQL en mémoire (Développement)
+Implémentation : Magasin d'objets JavaScript en mémoire
+
+Collections :
+1. users       - Comptes utilisateurs
+2. appointments - Réservations de rendez-vous
+3. services    - Services disponibles
+
+Opérations prises en charge :
+- getCollection(collectionName) - Récupérer tous les documents
+- insertDocument(collection, doc) - Ajouter un nouveau document
+- updateDocument(collection, id, update) - Mettre à jour/upsert un document
+- deleteDocument(collection, id) - Supprimer un document
+
+Couche de persistance :
+- AsyncStorage pour la session utilisateur connecté
+- Magasin en mémoire pour les données d'application (réinitialise au rechargement)
+
+Note : L'implémentation actuelle utilise le stockage en mémoire. Le déploiement 
+en production nécessiterait la connexion à une base de données NoSQL persistante 
+(MongoDB, Firebase, etc.) en implémentant la fonction connectToNoSQL().
+
+================================================================================
+FLUX DE NAVIGATION
+================================================================================
+
+Lancement de l'application :
+└── AppNavigator (Racine)
+    ├── Si non authentifié → AuthNavigator
+    │   ├── LoginScreen
+    │   └── RegisterScreen
+    │
+    └── Si authentifié → Stack Navigator
+        ├── TabNavigator (Principal)
+        │   ├── Onglet: Accueil → HomeScreen
+        │   ├── Onglet: Rendez-vous → AppointmentsScreen
+        │   └── Onglet: Profil → ProfileScreen
+        │
+        └── BookAppointmentScreen (Modal/Stack)
+
+Modèle de navigation :
+- Navigation par pile pour le flux d'authentification
+- Onglets en bas pour l'application principale
+- Écran Modal/Stack pour la réservation de rendez-vous
+- Basculement d'état d'authentification basé sur le contexte
+
+================================================================================
+GESTION D'ÉTAT
+================================================================================
+
+Implémentation de l'API Context :
+
+AuthContext :
+- user : Objet utilisateur connecté actuel ou null
+- loading : Booléen pour les opérations asynchrones
+- login(email, password) : Authentifier l'utilisateur
+- register(name, email, password) : Créer un nouveau compte
+- logout() : Effacer la session utilisateur
+- editProfile(updatedUser) : Mettre à jour les informations utilisateur
+
+État local :
+- État au niveau du composant utilisant les hooks React (useState)
+- Indicateurs de chargement pour les opérations asynchrones
+- États de saisie et validation de formulaire
+- États de visibilité des modales
+- États du sélecteur de date/heure
+
+Persistance :
+- AsyncStorage pour la persistance de session utilisateur
+- Restauration automatique de session au lancement de l'application
+- Effacement de session à la déconnexion
+
+================================================================================
+DÉTAILS DES ÉCRANS
+================================================================================
+
+1. LoginScreen (Écran de connexion)
+   - Champs de saisie email et mot de passe
+   - Bouton de connexion avec état de chargement
+   - Lien vers l'écran d'inscription
+   - Validation de formulaire
+   - Gestion des erreurs pour identifiants invalides
+
+2. RegisterScreen (Écran d'inscription)
+   - Champs de saisie nom, email et mot de passe
+   - Bouton d'inscription avec état de chargement
+   - Lien vers l'écran de connexion
+   - Validation de saisie
+   - Vérification des emails en double
+
+3. HomeScreen (Écran d'accueil)
+   - Message de bienvenue avec le nom d'utilisateur
+   - Description de l'application
+   - Marque SmartQueue
+   - Espace réservé d'icône pour le logo
+
+4. AppointmentsScreen (Écran de rendez-vous)
+   - Liste des rendez-vous de l'utilisateur
+   - Bouton d'ajout de rendez-vous
+   - Actions de modification/suppression de rendez-vous
+   - Affichage du statut de rendez-vous
+   - Message d'état vide
+   - Indicateur de chargement
+   - Modale pour les opérations d'ajout/modification
+   - Intégration du sélecteur de date/heure
+
+5. BookAppointmentScreen (Écran de réservation)
+   - Menu déroulant de sélection de service
+   - Bouton de sélection de date
+   - Bouton de sélection d'heure
+   - Bouton de réservation de rendez-vous
+   - Validation de formulaire
+   - États de chargement
+   - Confirmation de succès
+
+6. ProfileScreen (Écran de profil)
+   - Affichage des informations utilisateur (nom, email)
+   - Bascule du mode édition
+   - Actions Enregistrer/Annuler
+   - Bouton de déconnexion
+   - Confirmation de mise à jour de profil
+
+================================================================================
+BIBLIOTHÈQUE DE COMPOSANTS
+================================================================================
+
+AppHeader :
+- Affiche le titre de l'écran avec icône
+- Style d'en-tête cohérent dans l'application
+- Utilise @expo/vector-icons
+
+CustomButton :
+- Composant bouton tactile
+- Support de l'état de chargement
+- Options de style personnalisées
+- État désactivé pendant le chargement
+- Effets d'ombre
+
+CustomInput :
+- Saisie de texte avec préfixe d'icône
+- Support de placeholder
+- Option de saisie de texte sécurisée
+- Contrôle de la capitalisation automatique
+- Configuration du type de clavier
+- Style cohérent
+
+AppointmentCard :
+- Affiche les informations de rendez-vous
+- Indicateur de statut
+- Boutons d'action Modifier/Supprimer
+- Mise en page en carte
+
+ServiceCard :
+- Affichage des informations de service
+- Fonctionnalité de sélection
+- Conception en carte
+
+================================================================================
+VALIDATION ET SÉCURITÉ
+================================================================================
+
+Validation d'email :
+- Modèle Regex : /^\S+@\S+\.\S+$/
+- Assure un format d'email valide
+- Pas d'espaces autorisés
+
+Validation de mot de passe :
+- Longueur minimale : 6 caractères
+- Appliquée à l'inscription et à la connexion
+
+Validation de nom :
+- Longueur minimale : 2 caractères
+- Vérification de champ obligatoire
+
+Considérations de sécurité :
+- Mots de passe stockés en texte brut (DÉVELOPPEMENT UNIQUEMENT)
+- La production nécessite : hachage de mot de passe (bcrypt/argon2)
+- Pas de jetons d'authentification implémentés
+- Session stockée dans AsyncStorage (non cryptée)
+
+NOTES DE SÉCURITÉ IMPORTANTES :
+⚠️ L'implémentation actuelle est à des fins de développement/démonstration uniquement
+⚠️ Le déploiement en production nécessite :
+   - Hachage et salage des mots de passe
+   - Authentification JWT ou OAuth
+   - Chiffrement HTTPS/SSL
+   - Gestion sécurisée des sessions
+   - Assainissement des entrées
+   - Limitation de débit
+   - Protection CSRF
+
+================================================================================
+STYLE ET THÉMATISATION
+================================================================================
+
+Palette de couleurs :
+- Bleu primaire : #4F8EF7
+- Arrière-plan : #f7f9fc (gris-bleu clair)
+- Cartes blanches : #fff
+- Texte foncé : #333
+- Texte gris : #555, #aaa
+- Rouge erreur/suppression : #e74c3c
+
+Typographie :
+- Titre d'en-tête : 24px, gras
+- Texte de bienvenue : 24px, gras
+- Texte du corps : 16px
+- Étiquettes : 14-16px, semi-gras (600)
+- Liens : 16px, moyen (500)
+
+Style des composants :
+- Rayon de bordure : 10-16px (coins arrondis)
+- Padding : 24px (padding de conteneur standard)
+- Marge : 24px (marges d'écran)
+- Ombre : Ombres douces avec teinte bleue
+- Élévation : 2 (ombre Android)
+
+Modèles de mise en page :
+- Conteneurs de contenu basés sur des cartes
+- Espacement cohérent (8px, 12px, 16px, 24px, 48px)
+- Alignement centré du contenu
+- Mises en page réactives basées sur Flex
+
+================================================================================
+SCRIPTS DE BUILD ET D'EXÉCUTION
+================================================================================
+
+Scripts disponibles (package.json) :
+
+npm start
+  - Démarre le serveur de développement Expo
+  - Ouvre Metro bundler
+  - Fournit un code QR pour Expo Go
+
+npm run android
+  - Démarre l'application sur émulateur/appareil Android
+  - Nécessite la configuration d'Android Studio
+
+npm run ios
+  - Démarre l'application sur simulateur/appareil iOS
+  - Nécessite Xcode (macOS uniquement)
+
+npm run web
+  - Démarre la version web de l'application
+  - S'ouvre dans le navigateur à localhost
+
+Flux de travail de développement :
+1. Installer les dépendances : npm install
+2. Démarrer le serveur de développement : npm start
+3. Scanner le code QR avec l'application Expo Go ou appuyer sur 'a'/'i'/'w'
+
+================================================================================
+FICHIERS DE CONFIGURATION
+================================================================================
+
+Configuration app.json :
+- Nom de l'application : SmartQueue
+- Slug : SmartQueue
+- Version : 1.0.0
+- Orientation : Portrait uniquement
+- Style UI : Mode clair
+- Nouvelle architecture : Activée
+- Écran de démarrage : Icône personnalisée, fond blanc
+- Support de plateforme : iOS (tablette), Android, Web
+- Plugins : DateTimePicker
+
+Configuration du package :
+- Nom du package : smartqueue
+- Privé : true (non publié sur npm)
+- Point d'entrée : index.js
+
+================================================================================
+LIMITATIONS CONNUES ET À FAIRE
+================================================================================
+
+Limitations actuelles :
+1. Base de données en mémoire (données perdues au redémarrage de l'application)
+2. Aucune connexion à une base de données NoSQL réelle implémentée
+3. Les sélecteurs de date/heure affichent des alertes au lieu de sélecteurs réels dans BookAppointmentScreen
+4. Aucune ressource d'image chargée (icônes de remplacement utilisées)
+5. Pas de hachage de mot de passe (stockage en texte brut)
+6. Pas d'intégration d'API côté serveur
+7. Pas de mises à jour en temps réel
+8. Pas de support hors ligne
+9. Gestion limitée des erreurs
+10. Aucun test unitaire implémenté
+
+Améliorations suggérées :
+1. Connecter à Firebase/MongoDB pour un stockage persistant
+2. Implémenter une fonctionnalité appropriée de sélecteur de date/heure
+3. Ajouter le hachage de mot de passe et l'authentification JWT
+4. Créer une API backend pour la synchronisation des données
+5. Ajouter le téléchargement d'images pour les photos de profil
+6. Implémenter les notifications push
+7. Ajouter des rappels de rendez-vous
+8. Créer un panneau d'administration pour la gestion des services
+9. Ajouter des politiques d'annulation de rendez-vous
+10. Implémenter un système de notation/avis
+11. Ajouter une fonctionnalité de recherche et de filtrage
+12. Créer un tableau de bord d'analyse
+13. Ajouter le support multi-langue
+14. Implémenter des fonctionnalités d'accessibilité
+15. Ajouter des tests unitaires et d'intégration
+
+================================================================================
+ENVIRONNEMENT DE DÉVELOPPEMENT
+================================================================================
+
+Exigences :
+- Node.js (v14 ou supérieur)
+- Gestionnaire de paquets npm ou yarn
+- Expo CLI
+- Pour Android : Android Studio + Android SDK
+- Pour iOS : Xcode (macOS uniquement)
+- Pour Web : Navigateur web moderne
+
+Instructions de configuration :
+1. Cloner/télécharger le projet
+2. Naviguer vers le répertoire du projet
+3. Exécuter : npm install
+4. Exécuter : npm start
+5. Tester sur appareil avec Expo Go ou simulateurs
+
+Extensions VS Code recommandées :
+- React Native Tools
+- ES7+ React/Redux/React-Native snippets
+- Prettier - Code formatter
+- ESLint
+
+================================================================================
+API ET COUCHE DE SERVICE
+================================================================================
+
+Services localDatabase.js :
+
+Gestion des utilisateurs :
+- getUsers() → Array<User>
+- saveUsers(users) → void
+- registerUser(name, email, password) → User | null
+- loginUser(email, password) → User | null
+- editUser(updatedUser) → User | null
+
+Gestion des rendez-vous :
+- getAppointments() → Array<Appointment>
+- saveAppointments(appointments) → void
+- addAppointment(appointment) → Appointment
+- getUserAppointments(userId) → Array<Appointment>
+- updateAppointment(id, updatedFields) → Appointment | null
+- updateAppointmentStatus(id, status) → Appointment | null
+- deleteAppointment(id) → Boolean
+
+Gestion des services :
+- getServices() → Array<Service>
+
+Toutes les méthodes sont asynchrones et retournent des Promises.
+
+================================================================================
+DÉPENDANCES DE FICHIERS
+================================================================================
+
+Dépendances App.js :
+- React
+- expo-status-bar
+- AuthContext depuis context
+- AppNavigator depuis navigation
+
+Dépendances AuthContext.js :
+- React (createContext, useState, useEffect)
+- AsyncStorage
+- Service localDatabase
+
+Dépendances de navigation :
+- @react-navigation/native (NavigationContainer)
+- @react-navigation/stack (createStackNavigator)
+- @react-navigation/bottom-tabs (createBottomTabNavigator)
+- @expo/vector-icons (Ionicons)
+
+Dépendances d'écran :
+- Tous les écrans utilisent les composants React et React Native core
+- La plupart des écrans utilisent AuthContext pour l'état utilisateur
+- Les écrans de rendez-vous utilisent le service localDatabase
+- Les écrans de formulaire utilisent des composants personnalisés (CustomInput, CustomButton)
+
+================================================================================
+FLUX DE DONNÉES
+================================================================================
+
+Flux d'authentification :
+1. L'utilisateur entre les identifiants sur LoginScreen
+2. Appelle login() depuis AuthContext
+3. AuthContext appelle localDatabase.loginUser()
+4. La base de données recherche dans la collection users
+5. Si trouvé, l'utilisateur est stocké dans l'état du contexte
+6. L'utilisateur est sérialisé dans AsyncStorage
+7. AppNavigator détecte le changement d'état utilisateur
+8. Bascule vers la navigation authentifiée
+
+Flux de création de rendez-vous :
+1. L'utilisateur navigue vers BookAppointmentScreen
+2. Récupère les services depuis localDatabase
+3. L'utilisateur sélectionne service, date, heure
+4. Appelle localDatabase.addAppointment()
+5. Le nouveau rendez-vous est ajouté au magasin en mémoire
+6. La navigation retourne à l'écran précédent
+7. AppointmentsScreen récupère les rendez-vous de l'utilisateur
+8. La liste mise à jour est affichée à l'utilisateur
+
+Flux de mise à jour du profil :
+1. L'utilisateur clique sur "Modifier le profil" sur ProfileScreen
+2. Entre en mode édition avec des champs modifiables
+3. L'utilisateur modifie nom/email
+4. Appelle editProfile() depuis AuthContext
+5. AuthContext appelle localDatabase.editUser()
+6. La base de données met à jour l'utilisateur dans le magasin en mémoire
+7. L'utilisateur mis à jour est enregistré dans le contexte et AsyncStorage
+8. L'écran de profil affiche les informations mises à jour
+
+================================================================================
+DÉTAILS DE CONFIGURATION EXPO
+================================================================================
+
+Identité de l'application :
+- Nom d'affichage : SmartQueue
+- Slug : SmartQueue (pour la publication Expo)
+- Version : 1.0.0
+
+Ressources visuelles :
+- Icône : ./assets/icon.png
+- Écran de démarrage : ./assets/splash-icon.png (centré, fond blanc)
+- Icône adaptative (Android) : ./assets/adaptive-icon.png
+- Favicon (Web) : ./assets/favicon.png
+
+Paramètres de plateforme :
+
+iOS :
+- Support tablette : Activé
+- Orientation : Portrait
+
+Android :
+- Edge-to-Edge : Activé
+- Icône adaptative : Fond blanc
+- Orientation : Portrait
+
+Web :
+- Favicon configuré
+- Optimisations web activées
+
+Plugins :
+- @react-native-community/datetimepicker (pour la sélection de date/heure)
+
+Architecture :
+- Nouvelle architecture : Activée (nouvelle architecture de React Native)
+
+================================================================================
+UTILISATION D'ASYNC STORAGE
+================================================================================
+
+Clés de stockage :
+- 'loggedUser' - Stocke l'objet utilisateur authentifié actuel
+
+Opérations :
+- Enregistrer : AsyncStorage.setItem('loggedUser', JSON.stringify(user))
+- Charger : AsyncStorage.getItem('loggedUser') → Parse JSON
+- Supprimer : AsyncStorage.removeItem('loggedUser')
+
+Points d'utilisation :
+1. Lors d'une connexion réussie - enregistrer l'utilisateur
+2. Lors d'une inscription réussie - enregistrer l'utilisateur
+3. Au lancement de l'application - charger l'utilisateur enregistré
+4. Lors de la déconnexion - supprimer l'utilisateur
+5. Lors de la mise à jour du profil - mettre à jour l'utilisateur enregistré
+
+Persistance des données :
+- Persiste entre les sessions d'application
+- Survit à la fermeture forcée de l'application
+- Effacé lors de la désinstallation de l'application
+- Stockage spécifique à la plateforme (iOS/Android/Web)
+
+================================================================================
+GESTION DES ERREURS
+================================================================================
+
+Implémentation actuelle :
+- Dialogues d'alerte pour les erreurs utilisateur
+- Vérifications null pour les opérations de base de données
+- Validation avant soumission de formulaire
+- États de chargement pendant les opérations asynchrones
+- Dialogues de confirmation pour les actions destructives
+
+Scénarios d'erreur gérés :
+1. Identifiants de connexion invalides → Alerte
+2. Inscription avec email en double → Retourne null
+3. Champs de formulaire manquants → Alerte
+4. Échec de mise à jour du profil → Alerte
+5. Suppression de rendez-vous → Confirmation requise
+6. Erreurs réseau/stockage → Dégradation gracieuse
+
+Domaines nécessitant des améliorations :
+- Blocs try-catch pour les opérations asynchrones
+- Journalisation centralisée des erreurs
+- Messages d'erreur conviviaux
+- Mécanismes de nouvelle tentative
+- Gestion des erreurs hors ligne
+- Détails des erreurs de validation
+
+================================================================================
+CONSIDÉRATIONS DE TEST
+================================================================================
+
+Stratégie de test recommandée :
+
+Tests unitaires :
+- Fonctions de validation (validators.js)
+- Opérations de base de données (localDatabase.js)
+- Fournisseurs de contexte (AuthContext.js)
+- Rendu de composants
+- Interactions de boutons
+
+Tests d'intégration :
+- Flux d'authentification
+- Opérations CRUD de rendez-vous
+- Flux de navigation
+- Soumissions de formulaire
+- Persistance des données
+
+Tests E2E :
+- Parcours utilisateur complet
+- Inscription → Connexion → Réserver → Voir → Modifier → Supprimer → Déconnexion
+- Compatibilité multiplateforme
+- Tests de performance
+
+Outils de test à considérer :
+- Jest (tests unitaires)
+- React Native Testing Library
+- Detox (tests E2E)
+- Enzyme (tests de composants)
+
+Actuellement : Aucun test implémenté
+
+================================================================================
+CONSIDÉRATIONS DE DÉPLOIEMENT
+================================================================================
+
+Liste de contrôle pré-production :
+□ Implémenter une vraie base de données (Firebase/MongoDB)
+□ Ajouter le hachage de mot de passe (bcrypt)
+□ Implémenter l'authentification JWT
+□ Configurer un serveur API backend
+□ Configurer les variables d'environnement
+□ Ajouter la journalisation des erreurs (Sentry)
+□ Implémenter l'analyse
+□ Ajouter le rapport de crash
+□ Audit de sécurité
+□ Optimisation des performances
+□ Fractionnement du code
+□ Optimisation des ressources
+□ Configurer les permissions d'application
+□ Politique de confidentialité et conditions
+□ Ressources App Store (captures d'écran, descriptions)
+
+Processus de build :
+- Développement : Client Expo Go
+- Production : EAS Build ou expo build
+- Distribution : App Store (iOS), Play Store (Android)
+
+Variables d'environnement :
+- Points de terminaison API
+- Identifiants de base de données
+- Clés API
+- Indicateurs de fonctionnalité
+
+================================================================================
+NOTES DE PERFORMANCE
+================================================================================
+
+Stratégies d'optimisation :
+- FlatList pour un rendu de liste efficace
+- React.memo pour l'optimisation des composants
+- Les états de chargement empêchent les rendus inutiles
+- Le rendu conditionnel réduit l'arbre de composants
+
+Performance actuelle :
+- Base de données en mémoire : Opérations rapides
+- Pas de latence réseau (données locales)
+- Dépendances externes minimales
+- Structure de composants légère
+
+Optimisations futures :
+- Implémenter la pagination pour les grandes listes
+- Ajouter la mémoïsation pour les calculs coûteux
+- Optimiser les images et les ressources
+- Chargement paresseux des écrans
+- Mettre en cache les données fréquemment consultées
+- Débouncer les opérations de recherche/filtrage
+
+================================================================================
+FONCTIONNALITÉS D'ACCESSIBILITÉ
+================================================================================
+
+Implémentation actuelle :
+- Noms de composants sémantiques
+- Étiquettes de texte claires
+- Cibles tactiles de boutons (taille adéquate)
+- Indicateurs de chargement
+- Dialogues d'alerte pour les retours
+
+Améliorations recommandées :
+- Ajouter des étiquettes d'accessibilité
+- Support des lecteurs d'écran
+- Navigation au clavier (web)
+- Mode contraste élevé
+- Mise à l'échelle de la taille de police
+- Gestion du focus
+- Étiquettes ARIA (web)
+- Support VoiceOver
+
+================================================================================
+MAINTENANCE DU PROJET
+================================================================================
+
+Organisation du code :
+- Structure de composants modulaires
+- Séparation des préoccupations
+- Principe de responsabilité unique
+- Composants réutilisables
+- Conventions de nommage cohérentes
+
+Style de code :
+- Composants fonctionnels
+- Hooks React
+- Fonctions fléchées
+- Déstructuration
+- Littéraux de modèle
+
+Documentation :
+- Commentaires en ligne pour la logique complexe
+- Documentation au niveau des composants
+- Descriptions de fonctions
+- Marqueurs TODO pour le travail futur
+
+Recommandations de contrôle de version :
+- Workflow de branche de fonctionnalité
+- Messages de commit significatifs
+- Revues de pull request
+- Maintenance du changelog
+
+================================================================================
+CONTACT ET SUPPORT
+================================================================================
+
+Propriétaire du projet : Youssef Ataoury
+Emplacement du projet : C:\Users\Youssef Ataoury\Desktop\smartqueue\SmartQueue
+Créé : 2026
+Framework : Expo (React Native)
+
+Pour les problèmes :
+- Vérifier les erreurs de console
+- Consulter cette documentation
+- Vérifier que les dépendances sont installées
+- Consulter la documentation Expo
+- Consulter la documentation React Native
+
+Ressources :
+- Documentation Expo : https://docs.expo.dev
+- React Native : https://reactnative.dev
+- React Navigation : https://reactnavigation.org
+- AsyncStorage : https://react-native-async-storage.github.io
+
+================================================================================
+ANNEXE : RÉFÉRENCE RAPIDE
+================================================================================
+
+Commandes courantes :
+npm start              → Démarrer le serveur de développement
+npm run android        → Exécuter sur Android
+npm run ios            → Exécuter sur iOS
+npm run web            → Exécuter sur navigateur web
+npm install            → Installer les dépendances
+
+Chemins importants :
+/src/components        → Composants UI réutilisables
+/src/screens           → Écrans d'application
+/src/navigation        → Configuration de navigation
+/src/context           → Gestion d'état
+/src/services          → Logique métier
+/src/utils             → Fonctions utilitaires
+
+Fichiers clés :
+App.js                 → Point d'entrée de l'application
+index.js               → Enregistrement racine
+package.json           → Dépendances
+app.json               → Configuration Expo
+AuthContext.js         → État d'authentification
+localDatabase.js       → Couche de données
+
+Codes couleur :
+Primaire : #4F8EF7 (Bleu)
+Arrière-plan : #f7f9fc (Gris-bleu clair)
+Erreur : #e74c3c (Rouge)
+Texte : #333 (Gris foncé)
+
+Identifiants par défaut : (Configurer les vôtres)
+Note : Créer des utilisateurs de test via l'écran d'inscription
+
+================================================================================
+FIN DE LA DOCUMENTATION
+================================================================================
+Dernière mise à jour : 13 janvier 2026
+Nombre total de lignes de documentation : 900+
+Version de la documentation : 1.0.0
+================================================================================
